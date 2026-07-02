@@ -17,7 +17,7 @@ export const matches = pgTable('matches', {
 
 export const commentary = pgTable('commentary', {
   id: serial('id').primaryKey(),
-  matchId: integer('match_id').references(() => matches.id).notNull(),
+  matchId: integer('match_id').references(() => matches.id, { onDelete: 'cascade' }).notNull(),
   minute: integer('minute').notNull(),
   sequence: integer('sequence').notNull(),
   period: text('period').notNull(),
