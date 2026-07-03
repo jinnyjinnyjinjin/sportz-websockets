@@ -1,8 +1,8 @@
 import {Router} from "express";
-import {createMatchSchema, listMatchesQuerySchema} from "../validation/matches.js";
+import {createMatchSchema, listMatchesQuerySchema, MATCH_STATUS} from "../validation/matches.js";
 import {matches} from "../db/schema.js";
 import {db} from "../db/db.js";
-import {getMatchStatus} from "../utls/match-status.js";
+import {getMatchStatus} from "../utils/match-status.js";
 import {desc} from "drizzle-orm";
 
 export const matchRouter = Router()
@@ -44,13 +44,14 @@ matchRouter.post('/', async (req, res) => {
         const [event] = await db.insert(matches).values({
             ...parsed.data,
             startTime: new Date(startTime),
-            endTime: new Date(endTime),
+            endTime: endTime ? new Date(endTime) : null,
             homeScore: homeScore ?? 0,
             awayScore: awayScore ?? 0,
-            status: getMatchStatus(startTime, endTime),
+            status: endTime ? getMatchStatus(startTime, endTime) : MATCH_STATUS.SCHEDULED,
         }).returning();
         res.status(201).json({data: event});
     } catch (e) {
-        res.status(500).json({error: "Failed to create match.", details: JSON.stringify(e)})
+        console.error("Failed to create match:", e);
+        res.status(500).json({error: "Failed to create match."})
     }
 })
