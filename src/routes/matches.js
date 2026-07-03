@@ -50,8 +50,10 @@ matchRouter.post('/', async (req, res) => {
             status: endTime ? getMatchStatus(startTime, endTime) : MATCH_STATUS.SCHEDULED,
         }).returning();
 
-        if (res.app.locals.broadcastMatchCreated) {
-            res.app.locals.broadcastMatchCreated(event);
+        try {
+            res.app.locals.broadcastMatchCreated?.(event);
+        } catch (broadcastErr) {
+            console.error("Failed to broadcast match created:", broadcastErr);
         }
 
         res.status(201).json({data: event});

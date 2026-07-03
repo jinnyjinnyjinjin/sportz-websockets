@@ -8,8 +8,10 @@ function sendJson(socket, payload) {
 
 function broadcast(wss, payload) {
     for (const client of wss.clients) {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(payload));
+        try {
+            sendJson(client, payload);
+        } catch (err) {
+            console.error(err);
         }
     }
 }
