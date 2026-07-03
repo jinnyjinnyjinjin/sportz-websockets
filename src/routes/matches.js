@@ -49,6 +49,13 @@ matchRouter.post('/', async (req, res) => {
             awayScore: awayScore ?? 0,
             status: endTime ? getMatchStatus(startTime, endTime) : MATCH_STATUS.SCHEDULED,
         }).returning();
+
+        try {
+            res.app.locals.broadcastMatchCreated?.(event);
+        } catch (broadcastErr) {
+            console.error("Failed to broadcast match created:", broadcastErr);
+        }
+
         res.status(201).json({data: event});
     } catch (e) {
         console.error("Failed to create match:", e);
