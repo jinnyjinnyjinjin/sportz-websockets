@@ -11,8 +11,14 @@ function subscribe(matchId, socket) {
 }
 
 function unsubscribe(matchId, socket) {
-    if (matchSubscribers.has(matchId)) {
-        matchSubscribers.get(matchId).delete(socket);
+    const subscribers = matchSubscribers.get(matchId);
+
+    if (subscribers) {
+        subscribers.delete(socket);
+
+        if (subscribers.size === 0) {
+            matchSubscribers.delete(matchId);
+        }
     }
 }
 
@@ -39,7 +45,11 @@ function broadcastToMatch(matchId, payload) {
 
         for (const client of subscribers) {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
+                try {
+                    client.send(message);
+                } catch (err) {
+                    console.error(err);
+                }
             }
         }
     }
@@ -81,6 +91,7 @@ export function attachWebSocketServer(server) {
         const {pathname} = new URL(request.url, `http://${request.headers.host}`);
 
         if (pathname !== '/ws') {
+            socket.destroy();
             return;
         }
 
