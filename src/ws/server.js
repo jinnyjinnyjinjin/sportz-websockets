@@ -21,6 +21,8 @@ export function attachWebSocketServer(server) {
     const wss = new WebSocketServer({server, path: '/ws', maxPayload: 1024 * 1024,})
 
     wss.on('connection', async (socket, req) => {
+        socket.on('error', console.error);
+
         if (wsArcjet) {
             try {
                 const decision = await wsArcjet.protect(req);
@@ -39,8 +41,6 @@ export function attachWebSocketServer(server) {
         }
 
         sendJson(socket, {type: 'welcome'});
-
-        socket.on('error', console.error);
     });
 
     function broadcastMatchCreated(match) {
